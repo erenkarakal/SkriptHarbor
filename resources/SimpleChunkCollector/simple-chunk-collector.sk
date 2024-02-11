@@ -29,3 +29,6 @@ command givechunkcollector <player=%player%> <integer=1>:
   permission: chunk.collector.give
   trigger:
     give arg-2 of ({@item}) to arg-1
+
+local function getScriptInfo() :: strings:
+  return "Simple Chunk Collector", "1.1.0", "erenkarakal", "A simple chunk collector script.", "https://forums.skunity.com/resources/simple-chunk-collector.1605/"
