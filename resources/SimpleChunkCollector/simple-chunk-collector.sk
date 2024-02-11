@@ -21,9 +21,7 @@ on break:
 
 on item spawn:
   set {_leftover} to ({chunk.collector::%chunk at event-location%}'s inventory).addItem(event-itemtype).get(0)
-  set item of event-itementity to {_leftover}
-  wait 1 tick
-  kill event-entity
+  set item of event-entity to {_leftover}
 
 command givechunkcollector <player=%player%> <integer=1>:
   permission: chunk.collector.give
