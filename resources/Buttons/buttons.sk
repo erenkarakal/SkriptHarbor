@@ -1,0 +1,48 @@
+options:
+  # view range of the text display inside the block
+  view.range: 0.15 # disappears at the 10th block
+
+import:
+  java.lang.Runnable
+
+function runButtonFunction(id: string, p: player, l: location):
+  set {_fun} to function reference "button_%{_id}%" called with ({_p} and {_l})
+  set {_functions::run} to {_fun}
+  set {_proxy} to new proxy instance of Runnable using {_functions::*}
+  {_proxy}.run()
+
+command /givebuttonblock <string> [<item type>] [<string>]:
+  usage: /givebuttonblock <id> [item type] [display text]
+  permission: give.button.block
+  trigger:
+    set {_i} to (arg-2 ? glass) named "&eButton with id %arg-1%"
+    set {_n} to nbt of {_i}
+    set tag "button;id" of {_n} to arg-1
+    set tag "button;display" of {_n} to arg-3 ? "Press <yellow>_key"
+    give {_i} to player
+
+on place:
+  set {_item.nbt} to nbt of player's tool
+  {_item.nbt} has tag "button"
+
+  spawn text display at event-block
+  set {_e} to last spawned entity
+  set display billboard of {_e} to center
+  set display view range of {_e} to {@view.range}
+  set {_text} to tag "button;display" of {_item.nbt}
+  replace all "_key" in {_text} with "<key:key.swapOffhand>"
+  set display text component of {_e} to mini message from {_text}
+  set {button::%location of event-block%} to tag "button;id" of {_item.nbt}
+
+on break:
+  {button::%location of event-block%} is set
+  delete {button::%location of event-block%}
+  kill all entities within radius 0.1 of event-block
+
+on swap hand items:
+  {button::%location of targeted block%} is set
+  cancel event
+  runButtonFunction({button::%location of targeted block%}, player, location of targeted block)
+
+local function getScriptInfo() :: strings:
+  return "Buttons", "1.0.2", "erenkarakal", "Easily create button blocks.", "https://forums.skunity.com/resources/buttons.1614/"
