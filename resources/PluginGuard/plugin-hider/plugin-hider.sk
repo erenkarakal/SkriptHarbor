@@ -1,0 +1,118 @@
+options:
+  config: "./plugins/Skript/scripts/plugin-hider/config.yml"
+
+import:
+  ch.njol.skript.Skript
+
+  java.lang.Override
+  java.util.ArrayList
+  java.io.File
+  java.lang.System
+
+  org.bukkit.Bukkit
+  org.bukkit.plugin.Plugin
+  org.bukkit.configuration.file.YamlConfiguration
+
+  com.mojang.brigadier.suggestion.Suggestions
+  com.mojang.brigadier.suggestion.Suggestion
+  com.mojang.brigadier.context.StringRange
+
+  com.comphenix.protocol.events.PacketListener
+  com.comphenix.protocol.events.ListeningWhitelist
+  com.comphenix.protocol.events.ListenerPriority
+  com.comphenix.protocol.events.ListenerOptions
+  com.comphenix.protocol.events.PacketAdapter
+  com.comphenix.protocol.events.PacketEvent
+  com.comphenix.protocol.ProtocolLibrary
+  com.comphenix.protocol.PacketType
+  com.comphenix.protocol.injector.GamePhase
+
+preimport:
+  eren.TabCompleteListener
+
+public class TabCompleteListener extends PacketAdapter:
+
+  public TabCompleteListener():
+    super[Plugin, ListenerPriority, PacketType[]](Skript.getInstance(), ListenerPriority.NORMAL, [PacketType.Play.Server.TAB_COMPLETE as PacketType])
+
+  @Override
+  public void onPacketSending(PacketEvent event):
+    stop if {_event}.getPacketType() is not PacketType.Play.Server.TAB_COMPLETE
+    stop if {_event}.getPlayer() has permission "pluginhider.bypass"
+
+    set {_packet} to {_event}.getPacket().getSpecificModifier(Suggestions.class).read(0)
+    if {_packet}.getRange().getEnd() < 2:
+      punish({_event})
+    else:
+      set {_pl::*} to getPluginList()
+      loop ...{_packet}.getList():
+        if {_pl::*} doesn't contain loop-value.getText():
+          stop  # not hacking
+      punish({_event})
+
+on player command send:
+  stop if player has permission "pluginhider.bypass"
+  set command map to {-pl-hide::group::%player's group%::*}
+
+on command:
+  stop if executor is console
+  stop if player has permission "pluginhider.bypass"
+
+  if {-pl-hide::group::%player's group%::*} doesn't contain command:
+    send formatted {-pl-hide::message} to player
+    cancel event
+
+on load:
+  delete {-pl-hide::*}
+  set {_now} to System.currentTimeMillis()
+  set {_config} to loadConfig()
+  set {-pl-hide::punish-method} to {_config}.get("punish-method")
+  set {-pl-hide::command} to {_config}.get("command")
+  set {-pl-hide::message} to {_config}.get("message")
+  set {-pl-hide::fake.list::*} to ...{_config}.get("fakelist")
+  loop ...{_config}.get("group").getKeys(false):
+    add ...{_config}.get("group").get(loop-value) to {-pl-hide::group::%loop-value%::*}
+    loop {-pl-hide::group::%loop-value%::*}:
+      loop-value-2 starts with "$"
+      set {_group} to subtext of loop-value-2 from character 2 to (length of loop-value-2)
+      add ...{_config}.get("group").get({_group}) to {_pl-hide::group::%loop-value-1%::*}
+  send "&e[Plugin Hider] &fLoaded the config in &6%System.currentTimeMillis() - {_now}%ms&f." to console
+
+  set {TabComplete} to new TabCompleteListener()
+  ProtocolLibrary.getProtocolManager().addPacketListener({TabComplete})
+
+on unload:
+  ProtocolLibrary.getProtocolManager().removePacketListener({TabComplete})
+  delete {TabComplete}
+
+local function getPluginList() :: strings:
+  loop ...Bukkit.getPluginManager().getPlugins():
+    add loop-value.getName() to {_pl::*}
+  return {_pl::*}
+
+local function punish(event: object):
+  if {-pl-hide::punish-method} is "none":
+    {_event}.setCancelled(true)
+
+  else if {-pl-hide::punish-method} is "punish":
+    {_event}.setCancelled(true)
+    set {_cmd} to {-pl-hide::command}
+    replace all "<player>" in {_cmd} with "%{_event}.getPlayer()%"
+    execute console command {_cmd}
+
+  else if {-pl-hide::punish-method} is "fakelist":
+    set {_suggestionList} to new ArrayList()
+    loop {-pl-hide::fake.list::*}:
+      {_suggestionList}.add(new Suggestion(StringRange.at(1), "%loop-value%:%loop-value%"))
+    set {_event}.getPacket().getSpecificModifier(Suggestions.class).read(0).suggestions to {_suggestionList}
+
+local function loadConfig() :: object:
+  set {_config} to new YamlConfiguration()
+  set {_file} to new File({@config})
+  if {_file}.exists() is false:
+    {_file}.createNewFile()
+  {_config}.load({_file})
+  return {_config}
+
+local function getScriptInfo() :: strings:
+  return "PluginGuard", "2.1.1", "erenkarakal", "Protect your plugin list from cheaters.", "https://forums.skunity.com/resources/pluginguard-tab-hider-cheat-detection.1516/"
