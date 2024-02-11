@@ -6,3 +6,6 @@ on load:
 
 function tabhook_get_tab_player(p: player) :: object:
   return {TAB_API}.getPlayer({_p}'s name)
+
+local function getScriptInfo() :: strings:
+  return "TAB Hook", "1.0.1", "erenkarakal", "Hook into 'that' TAB plugin.", "https://forums.skunity.com/resources/tab-hook.1533/"
