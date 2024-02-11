@@ -6,3 +6,5 @@ TAB Hook is a Skript hook for ["That" TAB Plugin](https://github.com/NEZNAMY/TAB
 - [TAB](https://github.com/NEZNAMY/TAB/releases) 4.1.2
 
 View the syntaxes [here](https://github.com/erenkarakal/SkriptHarbor/tree/main/resources/tabhook/WIKI.md)
+
+## Click [here](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/erenkarakal/SkriptHarbor/tree/main/resources/tabhook/tabhook) to download.
