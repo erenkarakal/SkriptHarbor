@@ -1,0 +1,32 @@
+# # Add Item Attribute
+# adds an attribute to an item and then returns it.
+# list of slot names, attributes and operations can be found here: https://minecraft.fandom.com/wiki/Attribute
+function addItemAttribute(item: item, attribute: string, amount: number, operation: integer, slot: string) :: item:
+  set {_nbt} to (nbt compound of {_item})
+  set {_attributes::*} to (compound list tag "AttributeModifiers" of {_nbt})
+  set {_uuid} to uuid int array as string
+  set {_new.attribute} to (nbt compound from "{Slot:%{_slot}%, AttributeName:%{_attribute}%, Name:%{_attribute}%, Amount:%{_amount}%, Operation:%{_operation}%, UUID:%{_uuid}%}")
+  add {_new.attribute} to {_attributes::*}
+  set (compound list tag "AttributeModifiers" of {_nbt}) to {_attributes::*}
+  return {_item}
+
+# # Remove Item Attribute
+# removes the attribute of an item whether it is there or not and returns it.
+function removeItemAttribute(item: item, attribute: string) :: item:
+  set {_nbt} to (nbt compound of {_item})
+  set {_attributes::*} to (compound list tag "AttributeModifiers" of {_nbt})
+  loop {_attributes::*}:
+    if tag "Name" of loop-value is {_attribute}:
+      delete {_attributes::%loop-index%}
+  set (compound list tag "AttributeModifiers" of {_nbt}) to {_attributes::*}
+  return {_item}
+
+# # Get Item Attribute
+# gets the 'amount' of an attribute on an item, if the item doesn't have that attribute, it returns <none>.
+function getItemAttribute(item: item, attribute: string) :: object: # number doesn't work
+  set {_nbt} to (nbt compound of {_item})
+  set {_attributes::*} to (compound list tag "AttributeModifiers" of {_nbt})
+  loop {_attributes::*}:
+    if (tag "Name" of loop-value) is {_attribute}:
+      set {_amount} to (tag "Amount" of loop-value)
+      return {_amount}

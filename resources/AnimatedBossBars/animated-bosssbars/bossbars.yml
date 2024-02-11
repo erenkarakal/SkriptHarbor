@@ -1,0 +1,10 @@
+id:
+  color: red
+  duration: 5 seconds
+  animation: clock
+  style: segmented 10
+  title:
+    animation-interval: 5 ticks
+    strings:
+      - a
+      - b

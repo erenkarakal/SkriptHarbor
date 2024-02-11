@@ -1,0 +1,83 @@
+options:
+	# Enables placeholder support in bossbar titles, keep this disabled if you don't need it because it does some extra stuff.
+	# Requires PlaceholderAPI
+	papi: false
+
+	# Config path
+	config: "./plugins/Skript/scripts/animated-bossbars/bossbars.yml"
+
+on load:
+	if {@papi} is true:
+		set {-papi} to class "me.clip.placeholderapi.PlaceholderAPI"
+	set {-ab.config} to loadConfig()
+
+import:
+	java.io.File
+	org.bukkit.configuration.file.YamlConfiguration
+
+function ab_showBossBarWithId(p: players, id: string):
+	set {_titles::*} to ...{-ab.config}.getStringList("%{_id}%.title.strings")
+	set {_interval} to {-ab.config}.getString("%{_id}%.title.animation-interval") parsed as timespan
+	set {_duration} to {-ab.config}.getString("%{_id}%.duration") parsed as timespan
+	set {_color} to {-ab.config}.getString("%{_id}%.color") parsed as color
+	set {_style} to {-ab.config}.getString("%{_id}%.style") parsed as bossbarstyle
+	set {_animation} to {-ab.config}.getString("%{_id}%.animation")
+	ab_showBossBar({_p::*}, {_titles::*}, {_interval}, {_duration}, {_color}, {_style}, {_animation})
+
+function ab_showBossBar(p: players, titles: strings, interval: timespan, duration: timespan, color: color, style: bossbarstyle, animation: string):
+	if {@papi} is false:
+		set {_bars::*} to boss bar with id (random uuid) with title {_titles::1} with color {_color} with progress 100
+	else:
+		loop {_p::*}:
+			set {_title} to {-papi}.setPlaceholders(loop-value, {_titles::1})
+			add boss bar with id (random uuid) with title {_title} with color {_color} with progress 100 to {_bars::*}
+
+	loop {_bars::*}:
+		set {_bar} to loop-value
+		set bar style of {_bar} to {_style}
+		add {_p::*} to {_bar}
+
+		if size of {_titles::*} > 1:
+			ab_animateBossBarTitle((first element of (bossbar players of {_bar})), {_bar}, {_titles::*}, {_interval})
+
+		if {_animation} is "hourglass":
+			set {_i} to 100 / (ticks of {_duration})
+			while bossbar progress of {_bar} > 0:
+				wait 1 tick
+				remove {_i} from bossbar progress of {_bar}
+
+		else if {_animation} is "clock":
+			set {_i} to 100 / (seconds of {_duration})
+			while bossbar progress of {_bar} > 0:
+				wait 1 second
+				remove {_i} from bossbar progress of {_bar}
+
+		else: # no animation or invalid animation name
+			wait {_duration}
+
+		delete bossbar with id {_bar}.getKey().value()
+		# Using 'delete {_bar}' deletes the variable rather than the bossbar itself and there is no expression to get the ID of a bossbar.
+
+function ab_animateBossBarTitle(p: player, bar: bossbar, titles: strings, interval: timespan):
+	set {_size} to (size of {_titles::*})
+	while bossbar progress of {_bar} > 0:
+		wait {_interval}
+		add 1 to {_i}
+		if {_i} > {_size}:
+			set {_i} to 1
+
+		if {@papi} is true:
+			set bossbar title of {_bar} to {-papi}.setPlaceholders({_p}, {_titles::%{_i}%})
+		else:
+			set bossbar title of {_bar} to {_titles::%{_i}%}
+
+local function loadConfig() :: object:
+	set {_config} to new YamlConfiguration()
+	set {_file} to new File({@config})
+	if {_file}.exists() is false:
+		{_file}.createNewFile()
+	{_config}.load({_file})
+	return {_config}
+
+local function getScriptInfo() :: strings:
+  return "AnimatedBossbars", "1.0.0", "erenkarakal", "Animated BossBars with PAPI support", "https://forums.skunity.com/resources/animated-bossbars.1598/"
