@@ -1,0 +1,90 @@
+import:
+  ch.njol.skript.Skript
+  java.io.File
+  java.lang.Runnable
+  java.lang.String
+  org.bukkit.configuration.file.YamlConfiguration
+
+local function yaml(file: object) :: object:
+  set {_yaml} to new YamlConfiguration()
+  {_yaml}.load({_file})
+  return {_yaml}
+
+local function applyProperty(fun: string, id: string, values: objects):
+  set {_functions::run} to function {_fun} called with {_id}, [{_values::*} as Object] # reflect sucks
+  set {_proxy} to new proxy instance of Runnable using {_functions::*}
+  {_proxy}.run()
+
+on load:
+  delete {-item::*}
+  delete {-item.forge::handlers::*}
+  wait 1 tick # making sure this gets ran after handlers are registered
+  set {_dir} to new File("./plugins/Skript/scripts/ItemForge")
+  loop ...{_dir}.listFiles():
+    set {_yml} to yaml(loop-value)
+    loop ...{_yml}.getKeys(false): # loop all ids
+      set {-item::%loop-value-2%} to 1 stone with nbt (nbt from "{ItemForgeID:%loop-value-2%}")
+      set {_section} to {_yml}.get(loop-value-2)
+      loop ...{_section}.getKeys(false): # loop all properties of an id
+        if {-item.forge::handlers::%loop-value-3%} isn't set:
+          send "&cUnknown property '%loop-value-3%'. Skipping it." to console
+          continue
+        if {_section}.isList(loop-value-3) is true:
+          applyProperty("itemForgeHandler_%loop-value-3%", loop-value-2, ...{_section}.get(loop-value-3))
+        else:
+          applyProperty("itemForgeHandler_%loop-value-3%", loop-value-2, {_section}.get(loop-value-3))
+
+function addItemForgeHandler(fun: strings):
+  loop {_fun::*}:
+    if function "itemForgeHandler_%loop-value%" isn't set:
+      send "&cCouldn't add handler '%loop-value%'. Function 'itemForgeHandler_%loop-value%' doesn't exist." to console
+      stop
+    set {-item.forge::handlers::%loop-value%} to true
+
+# --- handlers ---
+on load:
+  addItemForgeHandler("type", "name", "lore", "amount", "enchantments", "nbt", "custom_model_data", "test")
+
+function itemForgeHandler_type(id: string, values: object):
+  set {_type} to {_values}[0] parsed as itemtype
+  if {_type} isn't set:
+    send "&c[ItemForge] Invalid item type '%{_values}[0]%' in '%{_id}.type%'." to console
+    stop
+  set {_nbt} to full nbt of {-item::%{_id}%}
+  set {_namespace} to namespaced key of {_type}
+  set tag "id" of {_nbt} to {_namespace}
+  set {-item::%{_id}%} to item from nbt {_nbt}
+
+function itemForgeHandler_name(id: string, values: object):
+  set name of {-item::%{_id}%} to formatted {_values}[0]
+
+function itemForgeHandler_lore(id: string, values: object):
+  set lore of {-item::%{_id}%} to formatted ...{_values}
+
+function itemForgeHandler_amount(id: string, values: object):
+  set item amount of {-item::%{_id}%} to {_values}[0]
+
+function itemForgeHandler_enchantments(id: string, values: object):
+  loop ...{_values}:
+    set {_enchantment} to loop-value parsed as enchantment type
+    if {_enchantment} isn't set:
+      send "&c[ItemForge] Invalid enchantment '%loop-value%' in '%{_id}.enchantments%'." to console
+      continue
+    enchant {-item::%{_id}%} with {_enchantment}
+
+function itemForgeHandler_nbt(id: string, values: object):
+  set {_nbt} to nbt from {_values}[0]
+  if {_nbt} isn't set:
+    send "&c[ItemForge] Invalid NBT '%{_values}[0]%' in '%{_id}.nbt%'." to console
+    stop
+  add {_nbt} to nbt of {-item::%{_id}%}
+
+function itemForgeHandler_custom_model_data(id: string, values: object):
+  set custom model data of {-item::%{_id}%} to {_values}[0]
+
+function itemForgeHandler_durability(id: string, values: object):
+  set durability of {-item::%{_id}%} to {_values}[0]
+# -------
+
+local function getScriptInfo() :: strings:
+  return "Item Forge", "1.0.0", "erenkarakal", "An easy to use item builder.", "RESOURCE LINK"
