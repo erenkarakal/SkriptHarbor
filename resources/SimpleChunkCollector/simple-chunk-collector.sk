@@ -1,0 +1,31 @@
+options:
+  item: hopper named "&eChunk Collector"
+
+on place:
+  1 of player's tool is ({@item})
+  set {_cc} to {chunk.collector::%chunk at event-block%}
+  if {_cc} is set:
+    send "&cThere is already a chunk collector on this chunk. (x%x-coord of {_cc}%, y%y-coord of {_cc}%, z%z-coord of {_cc}%)" to player
+    cancel event
+    stop
+  set {chunk.collector::%chunk at event-block%} to event-block
+  send "&aPlaced a chunk collector" to player
+
+on break:
+  {chunk.collector::%chunk at event-block%} is event-block
+  send "&cBroke a chunk collector." to player
+  delete {chunk.collector::%chunk at event-block%}
+  cancel drops
+  drop ({@item}) at event-block
+  drop all items in event-block's inventory at event-block
+
+on item spawn:
+  set {_leftover} to ({chunk.collector::%chunk at event-location%}'s inventory).addItem(event-itemtype).get(0)
+  set item of event-itementity to {_leftover}
+  wait 1 tick
+  kill event-entity
+
+command givechunkcollector <player=%player%> <integer=1>:
+  permission: chunk.collector.give
+  trigger:
+    give arg-2 of ({@item}) to arg-1
