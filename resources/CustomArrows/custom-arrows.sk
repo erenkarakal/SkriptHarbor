@@ -1,0 +1,42 @@
+import:
+  java.lang.Runnable
+  org.bukkit.event.entity.EntityShootBowEvent
+  org.bukkit.event.entity.ProjectileHitEvent
+
+local function runArrowShootFunction(id: string, shooter: player, projectile: entity, bow: item, event: event):
+  set {_fun} to function reference "arrow_%{_id}%_shoot" called with ({_shooter}, {_projectile}, {_bow}, {_event})
+  set {_functions::run} to {_fun}
+  set {_proxy} to new proxy instance of Runnable using {_functions::*}
+  {_proxy}.run()
+
+local function runArrowHitFunction(id: string, victim: entity, block: block, event: event):
+  set {_fun} to function reference "arrow_%{_id}%_hit" called with ({_victim}, {_block}, {_event})
+  set {_functions::run} to {_fun}
+  set {_proxy} to new proxy instance of Runnable using {_functions::*}
+  {_proxy}.run()
+
+function registerCustomArrow(id: string, item: item):
+  set {_n} to nbt of {_item}
+  set tag "CustomArrowID" of {_n} to {_id}
+  set {custom.arrow::%{_id}%} to {_item}
+
+# using the bukkit event to get the event arrow item
+on EntityShootBowEvent:
+  event.getEntity() is a player
+  set {_n} to nbt of event.getConsumable()
+  if {_n} has tag "CustomArrowID":
+    set {_id} to tag "CustomArrowID" of {_n}
+    set {_n} to nbt of event.getProjectile()
+    set tag "custom;CustomArrowID" of {_n} to {_id}
+    runArrowShootFunction({_id}, event.getEntity(), event.getProjectile(), event.getBow(), event)
+
+# using the bukkit event to get the hit entity without a damage event
+# i don't know why skript doesn't support this in the first place
+on ProjectileHitEvent:
+  set {_n} to nbt of event.getEntity()
+  {_n} has tag "custom;CustomArrowID"
+  set {_id} to tag "custom;CustomArrowID" of {_n}
+  runArrowHitFunction({_id}, event.getHitEntity(), event.getHitBlock(), event)
+
+local function getScriptInfo() :: strings:
+  return "Custom Arrows", "1.0.0", "erenkarakal", "Easily create custom arrows.", "https://forums.skunity.com/resources/custom-arrows.1620/"
