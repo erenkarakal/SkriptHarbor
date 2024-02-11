@@ -1,4 +1,5 @@
-Make sure to use this button for a better experience.
+Use this button at the right top for a better experience.  
+
 ![image](https://github.com/erenkarakal/SkriptHarbor/assets/67760502/f0f6e108-ae8a-4976-9263-1a3c470c81c2)
 
 
