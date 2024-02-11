@@ -1,0 +1,100 @@
+import:
+  me.neznamy.tab.api.nametag.NameTagManager
+
+on load:
+  set {TAB_API::team} to {TAB_API}.getNameTagManager()
+
+effect [tabhook] hide %player%'s nametag [from %-player%]:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    if expr-2 is set:
+      set {_viewer} to tabhook_get_tab_player(expr-2)
+      {TAB_API::team}.hideNametag({_p}, {_viewer})
+    else:
+      {TAB_API::team}.hideNametag({_p})
+
+effect [tabhook] show %player%'s nametag [to %-player%]:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    if expr-2 is set:
+      set {_viewer} to tabhook_get_tab_player(expr-2)
+      {TAB_API::team}.showNametag({_p}, {_viewer})
+    else:
+      {TAB_API::team}.showNametag({_p})
+
+condition [tabhook] %player%'s nametag is hidden [from %-player%]:
+  check:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    if expr-2 is set:
+      set {_viewer} to tabhook_get_tab_player(expr-2)
+      continue if {TAB_API::team}.hasHiddenNametag({_p}, {_viewer}) is true
+    continue if {TAB_API::team}.hasHiddenNametag({_p}) is true
+
+effect [tabhook] pause team handling of %player%:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.pauseTeamHandling({_p})
+
+effect [tabhook] resume team handling of %player%:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.resumeTeamHandling({_p})
+
+condition [tabhook] %player%'s team handling is paused:
+  check:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    continue if {TAB_API::team}.hasTeamHandlingPaused({_p}) is true
+
+player property [tabhook] collision rule:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getCollisionRule()
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.setCollisionRule({_p}, (change value))
+
+player property [tabhook] tag prefix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getCustomPrefix({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.setPrefix({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.resetPrefix({_p})
+
+player property [tabhook] tag suffix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getCustomSuffix({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.setSuffix({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::team}.resetSuffix({_p})
+    
+player property [tabhook] tag name:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getCustomName({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+
+# original
+
+player property [tabhook] original tag prefix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getOriginalPrefix({_p})
+
+player property [tabhook] original tag suffix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getOriginalSuffix({_p})
+
+player property [tabhook] original tag name:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::team}.getOriginalName({_p})

@@ -1,0 +1,22 @@
+on load:
+  set {TAB_API::tab} to {TAB_API}.getHeaderFooterManager()
+
+player property [tabhook] tab header:
+  get: 
+    return {_}
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::tab}.setHeader({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::tab}.resetHeader({_p})
+
+player property [tabhook] tab footer:
+  get: 
+    return {_}
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::tab}.setFooter({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::tab}.resetFooter({_p})

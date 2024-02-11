@@ -1,0 +1,84 @@
+import:
+  java.util.List
+  me.neznamy.tab.api.scoreboard.ScoreboardManager
+
+on load:
+  set {TAB_API::scoreboard} to {TAB_API}.getScoreboardManager()
+
+expression [tabhook] a new scoreboard (with name|named|with id) %string% (titled|with title) %string% with lines %strings%:
+  get:
+    set {_scoreboard} to {TAB_API::scoreboard}.createScoreboard(expr-1, expr-2, (List.of(exprs-3)))
+    return {_scoreboard}
+
+expression [tabhook] all [registered] scoreboards:
+  get:
+    set {_scoreboards} to {TAB_API::scoreboard}.getRegisteredScoreboards().values().toArray()
+    return ...{_scoreboards}
+
+expression [tabhhook] scoreboard with id %string%:
+  get:
+    return {TAB_API::scoreboard}.getRegisteredScoreboards().get(expr-1)
+
+effect [tabhook] show scoreboard %object% to %player%:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-2)
+    {TAB_API::scoreboard}.showScoreboard({_p}, expr-1)
+
+condition [tabhook] %player% has custom scoreboard [enabled]:
+  check:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    continue if {TAB_API::scoreboard}.hasCustomScoreboard({_p}) is true
+
+effect [tabhook] hide scoreboard of %player%:
+  trigger:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::scoreboard}.resetScoreboard({_p})
+
+player property [tabhook] scoreboard visibility:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::scoreboard}.hasScoreboardVisible({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::scoreboard}.setScoreboardVisible({_p}, (change value), false)
+
+effect [tabhook] announce scoreboard %string% for %timespan%:
+  trigger:
+    set {_ms} to expr-2.getTicks() * 0.05 * 1000
+    {TAB_API::scoreboard}.announceScoreboard(expr-1, {_ms})
+
+player property [tabhook] active scoreboard:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::scoreboard}.getActiveScoreboard({_p})
+
+expression [tabhook] (name|id) of scoreboard %object%:
+  get:
+    return expr-1.getName()
+
+expression [tabhook] title of scoreboard %object%:
+  get:
+    return expr-1.getTitle()
+  set:
+    expr-1.setTitle(change value)
+
+expression [tabhook] lines of scoreboard %object%:
+  get:
+    loop ...expr-1.getLines():
+      add loop-value.getText() to {_lines::*}
+    return {_lines::*}
+  add:
+    expr-1.addLine(change value)
+  remove:
+    expr-1.removeLine(change value + 1)
+
+expression [tabhook] line %integer% of scoreboard %object%:
+  get:
+    set {_lines::*} to ...expr-2.getLines()
+    return {_lines::%expr-1%}.getText()
+  set:
+    set {_lines::*} to expr-2.getLines().get(expr-1 + 1).setText(change value)
+    
+effect [tabhook] unregister scoreboard %object%:
+  trigger:
+    expr-1.unregister()

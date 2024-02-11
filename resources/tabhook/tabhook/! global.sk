@@ -1,0 +1,8 @@
+import:
+  me.neznamy.tab.api.TabAPI
+
+on load:
+  set {TAB_API} to TabAPI.getInstance()
+
+function tabhook_get_tab_player(p: player) :: object:
+  return {TAB_API}.getPlayer({_p}'s name)

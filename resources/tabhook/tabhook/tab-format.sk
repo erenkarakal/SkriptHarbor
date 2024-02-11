@@ -1,0 +1,49 @@
+on load:
+  set {TAB_API::format} to {TAB_API}.getTabListFormatManager()
+  
+player property [tabhook] tab prefix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getCustomPrefix({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::format}.setPrefix({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::format}.resetPrefix({_p})
+
+player property [tabhook] tab suffix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getCustomSuffix({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::format}.setSuffix({_p}, (change value))
+  reset:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::format}.resetSuffix({_p})
+    
+player property [tabhook] tab name:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getCustomName({_p})
+  set:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    {TAB_API::format}.setName({_p}, (change value))
+
+# original
+
+player property [tabhook] original tab prefix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getOriginalPrefix({_p})
+
+player property [tabhook] original tab suffix:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getOriginalSuffix({_p})
+
+player property [tabhook] original tab name:
+  get:
+    set {_p} to tabhook_get_tab_player(expr-1)
+    return {TAB_API::format}.getOriginalName({_p})
