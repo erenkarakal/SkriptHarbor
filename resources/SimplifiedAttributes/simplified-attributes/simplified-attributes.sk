@@ -30,3 +30,6 @@ function getItemAttribute(item: item, attribute: string) :: object: # number doe
     if (tag "Name" of loop-value) is {_attribute}:
       set {_amount} to (tag "Amount" of loop-value)
       return {_amount}
+
+local function getScriptInfo() :: strings:
+  return "Simplified Attributes", "1.1.0", "erenkarakal", "Functions for setting item attributes.", "https://forums.skunity.com/resources/simplified-attributes.1537/"
