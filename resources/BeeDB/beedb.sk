@@ -1,0 +1,59 @@
+options:
+  # namespace for the variable {bee.db::x...}
+  namespace: bee.db
+
+  # every X timespan, everyone's data will be saved
+  save.delay: 5 minutes
+
+on join:
+  beedb_load_data(player)
+
+on quit:
+  beedb_save_data(player)
+  delete {{@namespace}::%player's uuid%::*}
+
+every {@save.delay}:
+  loop all players:
+    beedb_save_data(loop-player)
+
+function beedb_save_data(p: player):
+  set {_nbt} to (nbt compound of file "plugins/Skript/scripts/BeeDB/%{_p}'s uuid%.dat")
+  # clear the nbt
+  loop nbt tags of {_nbt}:
+    delete tag loop-value of {_nbt}
+  add beedb_map_var_to_nbt((indices of {{@namespace}::%{_p}'s uuid%::*}), ("::%{_p}'s uuid%")) to {_nbt}
+  save nbt file of {_nbt}
+
+function beedb_load_data(p: player):
+  set {_nbt} to (nbt compound of file "plugins/Skript/scripts/BeeDB/%{_p}'s uuid%.dat")
+  beedb_map_nbt_to_var({_nbt}, "::%{_p}'s uuid%")
+
+# recursively loop the variable and add it to an nbt compound.
+function beedb_map_var_to_nbt(indices: strings, base.index: string, current.index: string = "") :: nbt compound:
+  if {_current.index} != "":
+    set {_tag} to (join ({_current.index} split at "::") with ";")
+    set {_tag} to (subtext of {_tag} from character 2 to (the length of {_tag})) # delete the first character because it is ";"
+    set {_tag} to "%{_tag}%;"
+  set {_nbt} to (nbt compound from "{}")
+
+  loop {_indices::*}:
+    if {{@namespace}%{_base.index}%%{_current.index}%::%loop-value%} is set:
+      set tag "%{_tag} ? ""%%loop-value%" of {_nbt} to {{@namespace}%{_base.index}%%{_current.index}%::%loop-value%}
+
+    if indices of {{@namespace}%{_base.index}%%{_current.index}%::%loop-value%::*} is set:
+      add beedb_map_var_to_nbt((indices of {{@namespace}%{_base.index}%%{_current.index}%::%loop-value%::*}), {_base.index}, "%{_current.index}%::%loop-value%") to {_nbt}
+
+  return {_nbt}
+
+# recursively loop the nbt tags and set the variable
+function beedb_map_nbt_to_var(nbt: nbt compound, index: string):
+  loop (nbt tags of {_nbt}):
+    set {_tag} to (tag loop-value of {_nbt})
+
+    if {_tag} is an nbt compound:
+      # there is still nbt tags we need to loop, so we go lower.
+      beedb_map_nbt_to_var({_tag}, "%{_index}%::%loop-value%")
+
+    else:
+      # the value is not an nbt compound, meaning we reached the bottom.
+      set {{@namespace}%{_index}%::%loop-value%} to {_tag}
