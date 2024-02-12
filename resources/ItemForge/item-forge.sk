@@ -76,4 +76,4 @@ function itemForgeHandler_durability(id: string, values: object):
 # -------
 
 local function getScriptInfo() :: strings:
-  return "Item Forge", "1.0.0", "erenkarakal", "An easy to use item builder.", "RESOURCE LINK"
+  return "Item Forge", "1.0.0", "erenkarakal", "An easy to use item builder.", "https://forums.skunity.com/resources/itemforge.1702/"
