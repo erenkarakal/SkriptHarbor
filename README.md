@@ -1,4 +1,4 @@
-# Resources
+# SkriptHarbor
 All of my Skript resources under 1 repository.
 
 # Getting Support
