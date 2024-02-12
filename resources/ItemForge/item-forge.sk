@@ -17,8 +17,6 @@ local function applyProperty(fun: string, id: string, values: objects):
 
 on load:
   delete {-item::*}
-  delete {-item.forge::handlers::*}
-  wait 1 tick # making sure this gets ran after handlers are registered
   set {_dir} to new File("./plugins/Skript/scripts/ItemForge")
   loop ...{_dir}.listFiles():
     set {_yml} to yaml(loop-value)
@@ -26,7 +24,7 @@ on load:
       set {-item::%loop-value-2%} to 1 stone with nbt (nbt from "{ItemForgeID:%loop-value-2%}")
       set {_section} to {_yml}.get(loop-value-2)
       loop ...{_section}.getKeys(false): # loop all properties of an id
-        if {-item.forge::handlers::%loop-value-3%} isn't set:
+        if function "itemForgeHandler_%loop-value-2%" isn't set:
           send "&cUnknown property '%loop-value-3%'. Skipping it." to console
           continue
         if {_section}.isList(loop-value-3) is true:
@@ -34,17 +32,7 @@ on load:
         else:
           applyProperty("itemForgeHandler_%loop-value-3%", loop-value-2, {_section}.get(loop-value-3))
 
-function addItemForgeHandler(fun: strings):
-  loop {_fun::*}:
-    if function "itemForgeHandler_%loop-value%" isn't set:
-      send "&cCouldn't add handler '%loop-value%'. Function 'itemForgeHandler_%loop-value%' doesn't exist." to console
-      stop
-    set {-item.forge::handlers::%loop-value%} to true
-
 # --- handlers ---
-on load:
-  addItemForgeHandler("type", "name", "lore", "amount", "enchantments", "nbt", "custom_model_data", "test")
-
 function itemForgeHandler_type(id: string, values: object):
   set {_type} to {_values}[0] parsed as itemtype
   if {_type} isn't set:
@@ -56,10 +44,11 @@ function itemForgeHandler_type(id: string, values: object):
   set {-item::%{_id}%} to item from nbt {_nbt}
 
 function itemForgeHandler_name(id: string, values: object):
-  set name of {-item::%{_id}%} to formatted {_values}[0]
+  set name of {-item::%{_id}%} to mini message from {_values}[0]
 
 function itemForgeHandler_lore(id: string, values: object):
-  set lore of {-item::%{_id}%} to formatted ...{_values}
+  loop ...{_values}:
+    add mini message from loop-value to lore of {-item::%{_id}%}
 
 function itemForgeHandler_amount(id: string, values: object):
   set item amount of {-item::%{_id}%} to {_values}[0]
