@@ -20,7 +20,8 @@ on break:
   drop all items in event-block's inventory at event-block
 
 on item spawn:
-  set {_leftover} to ({chunk.collector::%chunk at event-location%}'s inventory).addItem(event-itemtype).get(0)
+  {chunk.collector::%chunk at event-location%} is set
+  set {_leftover} to ({chunk.collector::%chunk at event-location%}'s inventory).addItem(event-itemtype).get(0.intValue())
   set item of event-entity to {_leftover}
 
 command givechunkcollector <player=%player%> <integer=1>:
