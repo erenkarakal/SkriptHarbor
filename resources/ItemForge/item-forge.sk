@@ -7,6 +7,7 @@ import:
 
 local function yaml(file: object) :: object:
   set {_yaml} to new YamlConfiguration()
+  {_yaml}.options().pathSeparator("*".charAt(0))
   {_yaml}.load({_file})
   return {_yaml}
 
@@ -76,4 +77,4 @@ function itemForgeHandler_durability(id: string, values: object):
 # -------
 
 local function getScriptInfo() :: strings:
-  return "Item Forge", "1.0.0", "erenkarakal", "An easy to use item builder.", "https://forums.skunity.com/resources/itemforge.1702/"
+  return "Item Forge", "1.0.0", "erenkarakal", "An easy to use item builder.", "RESOURCE LINK"
