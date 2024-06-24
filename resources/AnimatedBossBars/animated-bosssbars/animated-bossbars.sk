@@ -15,30 +15,35 @@ import:
 	java.io.File
 	org.bukkit.configuration.file.YamlConfiguration
 
-function ab_showBossBarWithId(p: players, id: string):
+function showBossBarWithId(p: players, id: string):
+	if {-ab.config}.isSet({_id}) is false:
+		stop
 	set {_titles::*} to ...{-ab.config}.getStringList("%{_id}%.title.strings")
 	set {_interval} to {-ab.config}.getString("%{_id}%.title.animation-interval") parsed as timespan
 	set {_duration} to {-ab.config}.getString("%{_id}%.duration") parsed as timespan
 	set {_color} to {-ab.config}.getString("%{_id}%.color") parsed as color
 	set {_style} to {-ab.config}.getString("%{_id}%.style") parsed as bossbarstyle
 	set {_animation} to {-ab.config}.getString("%{_id}%.animation")
-	ab_showBossBar({_p::*}, {_titles::*}, {_interval}, {_duration}, {_color}, {_style}, {_animation})
+	showBossBar({_p::*}, {_titles::*}, {_interval}, {_duration}, {_color}, {_style}, {_animation})
 
-function ab_showBossBar(p: players, titles: strings, interval: timespan, duration: timespan, color: color, style: bossbarstyle, animation: string):
+function showBossBar(p: players, titles: strings, interval: timespan, duration: timespan, color: color, style: bossbarstyle, animation: string):
 	if {@papi} is false:
-		set {_bars::*} to boss bar with id (random uuid) with title {_titles::1} with color {_color} with progress 100
+		set {_bars::*} to boss bar with id (random uuid) with title (formatted {_titles::1}) with color {_color} with style {_style} with progress 100
+		add {_p::*} to {_bars::1}
+		if size of {_titles::*} > 1:
+			animateBossBarTitle({_p::1}, {_bars::1}, {_titles::*}, {_interval})
 	else:
 		loop {_p::*}:
-			set {_title} to {-papi}.setPlaceholders(loop-value, {_titles::1})
-			add boss bar with id (random uuid) with title {_title} with color {_color} with progress 100 to {_bars::*}
+			set {_p} to loop-value
+			set {_title} to {-papi}.setPlaceholders({_p}, {_titles::1})
+			set {_bar} to boss bar with id (random uuid) with title (formatted {_title}) with color {_color} with style {_style} with progress 100
+			add {_bar} to {_bars::*}
+			add {_p} to {_bar}
+			if size of {_titles::*} > 1:
+				animateBossBarTitle({_p}, {_bar}, {_titles::*}, {_interval})
 
 	loop {_bars::*}:
 		set {_bar} to loop-value
-		set bar style of {_bar} to {_style}
-		add {_p::*} to {_bar}
-
-		if size of {_titles::*} > 1:
-			ab_animateBossBarTitle((first element of (bossbar players of {_bar})), {_bar}, {_titles::*}, {_interval})
 
 		if {_animation} is "hourglass":
 			set {_i} to 100 / (ticks of {_duration})
@@ -52,32 +57,43 @@ function ab_showBossBar(p: players, titles: strings, interval: timespan, duratio
 				wait 1 second
 				remove {_i} from bossbar progress of {_bar}
 
+		else if {_animation} is "blink":
+			loop (seconds of {_duration}) / 2 times:
+				set (bossbar progress of {_bar}) to 0
+				wait 1 second
+				set (bossbar progress of {_bar}) to 100
+				wait 1 second
+
 		else: # no animation or invalid animation name
 			wait {_duration}
 
-		delete bossbar with id {_bar}.getKey().value()
-		# Using 'delete {_bar}' deletes the variable rather than the bossbar itself and there is no expression to get the ID of a bossbar.
+		delete random bossbar out of {_bar}
 
-function ab_animateBossBarTitle(p: player, bar: bossbar, titles: strings, interval: timespan):
+function animateBossBarTitle(p: player, bar: bossbar, titles: strings, interval: timespan):
 	set {_size} to (size of {_titles::*})
-	while bossbar progress of {_bar} > 0:
+	while (bossbar with id {_bar}.getKey().value()) is set:
 		wait {_interval}
 		add 1 to {_i}
 		if {_i} > {_size}:
 			set {_i} to 1
 
 		if {@papi} is true:
-			set bossbar title of {_bar} to {-papi}.setPlaceholders({_p}, {_titles::%{_i}%})
+			set bossbar title of {_bar} to {-papi}.setPlaceholders({_p}, (formatted {_titles::%{_i}%}))
 		else:
-			set bossbar title of {_bar} to {_titles::%{_i}%}
+			set bossbar title of {_bar} to (formatted {_titles::%{_i}%})
 
 local function loadConfig() :: object:
 	set {_config} to new YamlConfiguration()
 	set {_file} to new File({@config})
 	if {_file}.exists() is false:
+		{_file}.getParentFile().mkdirs()
 		{_file}.createNewFile()
 	{_config}.load({_file})
 	return {_config}
 
 local function getScriptInfo() :: strings:
-  return "AnimatedBossbars", "1.0.0", "erenkarakal", "Animated BossBars with PAPI support", "https://forums.skunity.com/resources/animated-bossbars.1598/"
+  return "AnimatedBossbars", "1.1.0", "erenkarakal", "Animated BossBars with PAPI support", "https://forums.skunity.com/resources/animated-bossbars.1598/"
+
+function showcase():
+  loop 4 times:
+    showBossBarWithId(all players, "%loop-value%")
