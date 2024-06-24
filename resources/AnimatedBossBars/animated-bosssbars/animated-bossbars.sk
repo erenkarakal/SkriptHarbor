@@ -93,7 +93,3 @@ local function loadConfig() :: object:
 
 local function getScriptInfo() :: strings:
   return "AnimatedBossbars", "1.1.0", "erenkarakal", "Animated BossBars with PAPI support", "https://forums.skunity.com/resources/animated-bossbars.1598/"
-
-function showcase():
-  loop 4 times:
-    showBossBarWithId(all players, "%loop-value%")
