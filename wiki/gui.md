@@ -151,6 +151,7 @@ function openGui(p: player):
         set slot 0 of {-inventory::%{_p}'s uuid%} to stone
         wait 1 tick
         set slot 0 of {-inventory::%{_p}'s uuid%} to cobblestone
+        wait 1 tick
 ```
 We don't need to do anything extra because that loop will stop when the inventory is closed since we are deleting the variable on inventory close.
 
