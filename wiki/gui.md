@@ -212,7 +212,7 @@ function openBalGui(p: player, page: num = 1):
     set slot (0, 53 times) of {-bal.gui::%{_p}'s uuid%} to (light gray stained glass pane named "&f" with all item flags)
 
     # set player heads
-    set {_start} to {_page} * 45 - 44
+    set {_start} to {_page} * 45 - 44   # 45 is the amount of elements per page
     set {_end} to {_start} + 44
     set {_uuids::*} to elements from {_start} to {_end} of (indices of {bal::*})
     loop {_uuids::*}:
