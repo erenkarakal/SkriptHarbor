@@ -197,5 +197,5 @@ You can use the [player input event](https://skripthub.net/docs/?id=12920) and [
 You can also store the screen and cursor position as a global variable to make this easier.
 
 # Examples
-- Full code made in this wiki
-- Spawn menu
+- [Full code made in this wiki](https://github.com/erenkarakal/SkriptHarbor/blob/main/wiki/screen/screen.sk)
+- [Cursorless spawn menu](https://github.com/erenkarakal/SkriptHarbor/blob/main/wiki/screen/spawn.sk)
