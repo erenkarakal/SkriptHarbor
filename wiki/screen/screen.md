@@ -81,7 +81,7 @@ function start(p: player, screenLoc: location):
 ```
 Now our camera location will be calculated automatically to fit our screen.
 ![camera-distance.png](assets/camera-distance.png)
-POV:
+POV:\
 ![camera-pov.png](assets/camera-pov.png)
 
 <details>
