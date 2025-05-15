@@ -1,0 +1,65 @@
+import:
+  net.minecraft.network.protocol.game.ClientboundSetCameraPacket
+
+function spectate(p: player, target: entity = {_}):
+  set {_target} to {_target} ? {_p}
+  set {_packet} to new ClientboundSetCameraPacket({_target}.getHandle())
+  {_p}.getHandle().connection.sendPacket({_packet})
+
+local function getIdealDistance(screenWidth: num) :: num:
+  # ({_screenWidth} / 2) / tan(105 / 2)
+  return {_screenWidth} / 2.606
+
+function start(p: player, screenLoc: location):
+  set {_screenLoc} to {_screenLoc} ~~ vector(0, 0, 0.6) # because i passed the center of the block
+  set {_distance} to getIdealDistance(15) # 15 = screen width
+  set {_camLoc} to {_screenLoc} ~~ vector(0, 0, {_distance})
+  set yaw of {_camLoc} to 180
+
+  spawn text display at {_camLoc}:
+    set {_camera} to entity
+
+  spawn text display at ({_camLoc} ~~ vector(0, 0, 5)):
+    set {_seat} to entity
+    force {_p} to ride {_seat}
+
+  wait 1 tick
+  apply infinite invisibility without particles whilst hiding icon to {_p}
+  spectate({_p}, {_camera})
+
+  spawn item display at {_screenLoc}:
+    set {_cursor} to entity
+    set display scale of {_cursor} to vector(0.15, 0.15, 0.15)
+    set interpolation delay of {_cursor} to 0.6 seconds
+    set item of {_cursor} to structure void
+
+  # left bottom corner of the screen
+  set {_screen.corner} to {_screenLoc} ~~ vector(-7.5, -4, 0)
+
+  set {-cam::%{_p}%} to true
+  while {-cam::%{_p}%} is true:
+    set {_cursor.x} to ({_p}'s yaw) / 360 * 15 # 15 is the screen width
+
+    # fix skipping
+    if abs(({_cursor.prev.x} ? {_cursor.x}) - {_cursor.x}) > 10:
+      wait 1 tick
+      continue
+    set {_cursor.prev.x} to {_cursor.x}
+
+    set {_pitch} to (({_p}'s pitch * -1) + 90)
+    set {_cursor.y} to ({_pitch} / 180 * 8) # 8 is the screen height
+    send action bar "%{_cursor.x}% %{_cursor.y}%" to {_p}
+    teleport {_cursor} to {_screen.corner} ~~ vector({_cursor.x}, {_cursor.y}, 0)
+    wait 1 tick
+
+  # cleanup
+  kill ({_camera}, {_seat}, {_cursor})
+  remove invisibility from potion effects of {_p}
+  spectate({_p})
+
+function stop(p: player):
+  delete {-cam::%{_p}%}
+
+on dismount:
+  {-cam::%event-entity's uuid%} is true
+  cancel event

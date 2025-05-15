@@ -1,0 +1,99 @@
+import:
+  net.minecraft.network.protocol.game.ClientboundSetCameraPacket
+
+function spectate(p: player, target: entity = {_}):
+  set {_target} to {_target} ? {_p}
+  set {_packet} to new ClientboundSetCameraPacket({_target}.getHandle())
+  {_p}.getHandle().connection.sendPacket({_packet})
+
+local function getIdealDistance(screenWidth: num) :: num:
+  # ({_screenWidth} / 2) / tan(105 / 2)
+  return {_screenWidth} / 2.606
+
+local function spawn(mob: entity type, loc: location) :: entity:
+  spawn {_mob} at {_loc}:
+    set {_ent} to entity
+    set ai of {_ent} to false
+    set gravity of {_ent} to false
+    set velocity of {_ent} to vector(0, 0, 0)
+    make {_ent} silent
+  return {_ent}
+
+local function spawnTitle(mob: entity type, loc: location) :: entity:
+  spawn text display at {_loc}:
+    set {_ent} to entity
+    set display scale of {_ent} to vector(2, 2, 2)
+    set text of {_ent} to "%{_mob}%" in proper case
+  return {_ent}
+
+local function refreshScreen(p: player):
+  delete entity within {-cam::%{_p}'s uuid%::entity}
+  delete entity within {-cam::%{_p}'s uuid%::title}
+
+  set {_entities::*} to {-cam::%{_p}'s uuid%::entities::*}
+  set {_index} to {-cam::%{_p}'s uuid%::entity.index}
+  set {_screen.corner} to {-cam::%{_p}'s uuid%::corner}
+
+  set {-cam::%{_p}'s uuid%::entity} to spawn({_entities::%{_index}%}, ({_screen.corner} ~~ vector(7.5, 3, 0)))
+  set {-cam::%{_p}'s uuid%::title} to spawnTitle({_entities::%{_index}%}, ({_screen.corner} ~~ vector(7.5, 5.5, 0)))
+
+function start(p: player, screenLoc: location):
+  set {_screenLoc} to {_screenLoc} ~~ vector(0, 0, 0.6) # because i passed the center of the block
+  set {_distance} to getIdealDistance(15) # 15 = screen width
+  set {_camLoc} to {_screenLoc} ~~ vector(0, 0, {_distance})
+  set yaw of {_camLoc} to 180
+
+  spawn text display at {_camLoc}:
+    set {_camera} to entity
+
+  spawn text display at ({_camLoc} ~~ vector(0, 0, 5)):
+    set {_seat} to entity
+    force {_p} to ride {_seat}
+
+  wait 1 tick
+  apply infinite invisibility without particles whilst hiding icon to {_p}
+  spectate({_p}, {_camera})
+
+  # left bottom corner of the screen
+  set {_screen.corner} to {_screenLoc} ~~ vector(-7.5, -4, 0)
+  set {-cam::%{_p}'s uuid%::corner} to {_screen.corner}
+  set {-cam::%{_p}'s uuid%::entity.index} to 1
+  set {-cam::%{_p}'s uuid%::entities::*} to all entity types
+  refreshScreen({_p})
+
+  set {-cam::%{_p}%} to true
+  while {-cam::%{_p}%} is true:
+    wait 1 tick
+
+  # cleanup
+  kill ({_camera}, {_seat}, {-cam::%{_p}'s uuid%::entity}, {-cam::%{_p}'s uuid%::title})
+  remove invisibility from potion effects of {_p}
+  spectate({_p})
+  delete {-cam::%{_p}%::*}
+
+function stop(p: player):
+  delete {-cam::%{_p}%}
+
+on dismount:
+  {-cam::%event-entity's uuid%} is true
+  cancel event
+
+on player input key press:
+  {-cam::%player's uuid%} is true
+  if event-inputkeys contain right movement key:
+    {-cam::%player's uuid%::entity.index} != size of {-cam::%player's uuid%::entities::*}
+    add 1 to {-cam::%player's uuid%::entity.index}
+    refreshScreen(player)
+  else if event-inputkeys contain left movement key:
+    {-cam::%player's uuid%::entity.index} != 1
+    subtract 1 from {-cam::%player's uuid%::entity.index}
+    refreshScreen(player)
+  else if event-inputkeys contain jump key:
+    set {_index} to {-cam::%player's uuid%::entity.index}
+    spawn {-cam::%player's uuid%::entities::%{_index}%} at {-cam::%player's uuid%::entity}
+  else if event-inputkeys contain sneak key:
+    stop(player)
+
+command spawn:
+  trigger:
+    start(player, center of player)
