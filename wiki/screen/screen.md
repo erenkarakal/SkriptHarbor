@@ -57,7 +57,7 @@ Apply invisibility to the player to hide the hand.
 # Calculating camera position
 You might've noticed the unused `screenLoc` variable in the code.\
 We will use it to calculate how far the camera should be from the screen so that it fits perfectly on our screen.
-![camera-location.png](assets/camera-location.png)
+![camera-location.png](assets/camera-location.png)\
 We need the distance between Player and the C point, which is:\
 `PC = AC / tan(FOV / 2)`\
 The FOV is not the same as the one you see in settings, and either way, we don't have a way to get the player's FOV, so we will use `105` as the FOV, which is the default value.
