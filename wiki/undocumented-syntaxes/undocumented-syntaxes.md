@@ -1,5 +1,5 @@
 # Undocumented Skript Syntaxes
-This wiki contains vanilla Skript syntaxes that can't be found on documentation.\
+This wiki contains vanilla Skript syntaxes that can't be found in the documentation.\
 Some of these syntaxes might not work properly on a normal server.\
 All information was written for Skript 2.12.
 
@@ -9,7 +9,7 @@ Some of them might require a JUnit test to be running.
 
 ## Debug (Effect)
 **Since:** 2.7\
-Debug an expression by printing data of it to console. Can also debug what class an input is parsed as for Conditions and Effects. Useful for dealing with conflict debugging.\
+Debug an expression by printing its data to the console. Can also debug what class an input is parsed as for Conditions and Effects. Useful for dealing with conflict debugging.\
 **Patterns:**
 ```
 debug [:verbose] %objects%
@@ -33,11 +33,11 @@ executing 'debug console'
 ```
 
 ## Check JUnit (Condition)
-Returns true if the test runner is currently running a JUnit. Useful for the EvtTestCase of JUnit exclusive syntaxes registered from within the test packages.\
+Returns true if the test runner is currently running a JUnit test. Useful for the EvtTestCase of JUnit exclusive syntaxes registered from within the test packages.\
 **Pattern:** `running junit`
 
 ## JUnit Test Name (Expression)
-Returns the currently running JUnit test name otherwise nothing.\
+Returns the currently running JUnit test name, otherwise nothing.\
 **Pattern**: `[the] [current[[ly] running]] junit test [name]`
 
 ## Parse Section (Section)
@@ -45,7 +45,7 @@ Parse code inside this section and use 'parse logs' to grab any logs from it.\
 **Pattern:** `parse`
 
 ## Parse Structure (Structure)
-Parses the code inside this structure as a structure and use 'parse logs' to grab any logs from it.
+Parses the code inside this structure as a structure. Use 'parse logs' to grab any logs from it.
 **Example:**
 ```
 parse:
@@ -90,7 +90,7 @@ Checks if a method exists.\
 **Example**: `if method "org.bukkit.Bukkit#getPluginCommand(java.lang.String)" exists`
 
 ## Assert (Effect)
-Assert that condition is true. Test fails when it is not.\
+Assert that the condition is true. The test fails when it is not.\
 **Patterns:**
 ```
 assert <.+> [(1:to fail)] with [error] %string%
@@ -115,8 +115,7 @@ on load:
 ```
 
 ## Objectives (Effect)
-**Since:** unknown\
-**Description:** An effect to setup required objectives for JUnit tests to complete.\
+An effect to set up the required objectives for JUnit tests to complete.\
 **Patterns:**
 ```
 ensure [[junit] test] %string% completes [(objective|trigger)[s]] %strings%
@@ -156,7 +155,7 @@ test key values
 ```
 
 ## Test Plural Class Infos
-Tests that plural class infos are identified correctly. Not meant to be used for anything.
+Tests that the plural class infos are identified correctly. Not meant to be used for anything.
 ```
 classinfo test for %testgui%
 classinfo test for %testguis%
@@ -170,7 +169,7 @@ classinfo test for %hooves%
 Also registers 3 types named `example1`, `example2` and `example3`
 
 # Other Syntaxes
-These are syntaxes that can be used without enabling test / dev mode.
+These are syntaxes that can be used without enabling test/dev mode.
 
 ## Cause Exception (Effect)
 Causes an exception.\
@@ -189,12 +188,12 @@ Represents all event values.\
 **Pattern**: `[the] event-%*classinfo%`
 
 ## Example (Structure)
-Examples are structures that are parsed, but will never be run. They are used as miniature tutorials for demonstrating code snippets in the example files. Scripts containing an example are seen as 'examples' by the parser and may have special safety restrictions.
+Examples are structures that are parsed but will never be run. They are used as miniature tutorials for demonstrating code snippets in the example files. Scripts containing an example are seen as 'examples' by the parser and may have special safety restrictions.
 ```
 using examples
 
 example:
-	broadcast "hello"   # never ran
+  broadcast "hello"   # never ran
 ```
 
 # Enabling Test / Dev Mode
